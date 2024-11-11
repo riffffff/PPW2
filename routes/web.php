@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\LoginRegisterController;
 
 Route::get('/', function () {
@@ -24,3 +25,5 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
 // Rute dashboard untuk pengguna non-admin
 Route::get('/dashboard', [LoginRegisterController::class, 'dashboard'])->name('dashboard');
+
+Route::resource('users', UserController::class);

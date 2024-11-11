@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class LoginRegisterController extends Controller
 {
@@ -44,14 +45,26 @@ class LoginRegisterController extends Controller
         $request->validate([
             'name' => 'required|string|max:250',
             'email' => 'required|email|max:250|unique:users',
-            'password' => 'required|min:8|confirmed'
+            'password' => 'required|min:8|confirmed',
+            'photo' => 'image|nullable|max:1999',
         ]);
+
+        // Menyimpan file foto jika ada
+        if ($request->hasFile('photo')) {
+            $filenameWithExt = $request->file('photo')->getClientOriginalName();
+            $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+            $extension = $request->file('photo')->getClientOriginalExtension();
+            $filenameSimpan = $filename . time() . '.' . $extension;
+            // Menyimpan foto ke storage
+            $path = $request->file('photo')->storeAs('photos', $filenameSimpan);
+        }
 
         // Menyimpan pengguna baru ke database
         User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password)
+            'password' => Hash::make($request->password),
+            'photo' => $path
         ]);
 
         // Autentikasi dan login pengguna setelah registrasi berhasil
@@ -117,7 +130,6 @@ class LoginRegisterController extends Controller
     public function dashboard()
     {
         $user = Auth::user();
-
 
         if (Auth::check()) {
             return view('auth.dashboard', compact('user')); // Menampilkan dashboard jika pengguna login
