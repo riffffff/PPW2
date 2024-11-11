@@ -60,7 +60,7 @@ class LoginRegisterController extends Controller
         $request->session()->regenerate();
 
         // Redirect ke dashboard dengan pesan sukses
-        return redirect()->route('book.index')
+        return redirect()->route('dashboard')
             ->withSuccess('You have successfully registered & logged in!');
     }
 
@@ -88,11 +88,19 @@ class LoginRegisterController extends Controller
             'password' => 'required'
         ]);
 
-        // Jika autentikasi berhasil, redirect ke dashboard
+        // Jika autentikasi berhasil
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->route('book.index')
-                ->withSuccess('You have successfully logged in!');
+            $user = Auth::user();
+
+            // Redirect sesuai level pengguna
+            if ($user->level === 'admin') {
+                return redirect()->route('book.index')
+                    ->withSuccess('You have successfully logged in as admin!');
+            } else {
+                return redirect()->route('dashboard')
+                    ->withSuccess('You have successfully logged in!');
+            }
         }
 
         // Jika autentikasi gagal, kembali ke halaman login dengan pesan error
@@ -108,8 +116,11 @@ class LoginRegisterController extends Controller
      */
     public function dashboard()
     {
+        $user = Auth::user();
+
+
         if (Auth::check()) {
-            return redirect()->route('book.index'); // Menampilkan dashboard jika pengguna login
+            return view('auth.dashboard', compact('user')); // Menampilkan dashboard jika pengguna login
         }
 
         // Redirect ke halaman login jika pengguna belum login
