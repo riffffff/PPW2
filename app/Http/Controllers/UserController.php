@@ -111,7 +111,7 @@ class UserController extends Controller
     {
         $user = User::find($id);
 
-        $file = public_path() . '/storage/' . $user->photo;
+        $file = public_path() . 'storage/' . $user->photo;
 
         try {
             if (File::exists($file)) {

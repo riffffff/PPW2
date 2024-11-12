@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\Auth\LoginRegisterController;
 
 Route::get('/', function () {
@@ -27,3 +28,5 @@ Route::middleware(['auth', 'admin'])->group(function () {
 Route::get('/dashboard', [LoginRegisterController::class, 'dashboard'])->name('dashboard');
 
 Route::resource('users', UserController::class);
+
+Route::resource('gallery', GalleryController::class);
