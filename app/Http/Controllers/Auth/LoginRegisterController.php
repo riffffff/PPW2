@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Models\User;
+use App\Mail\WelcomeMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+
 
 class LoginRegisterController extends Controller
 {
@@ -41,7 +45,6 @@ class LoginRegisterController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi input untuk registrasi
         $request->validate([
             'name' => 'required|string|max:250',
             'email' => 'required|email|max:250|unique:users',
@@ -49,32 +52,30 @@ class LoginRegisterController extends Controller
             'photo' => 'image|nullable|max:1999',
         ]);
 
-        // Menyimpan file foto jika ada
         if ($request->hasFile('photo')) {
             $filenameWithExt = $request->file('photo')->getClientOriginalName();
             $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
             $extension = $request->file('photo')->getClientOriginalExtension();
             $filenameSimpan = $filename . time() . '.' . $extension;
-            // Menyimpan foto ke storage
             $path = $request->file('photo')->storeAs('photos', $filenameSimpan);
         }
 
-        // Menyimpan pengguna baru ke database
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'photo' => $path
+            'photo' => $path ?? null,
         ]);
 
-        // Autentikasi dan login pengguna setelah registrasi berhasil
-        $credentials = $request->only('email', 'password');
-        Auth::attempt($credentials);
+        $registrationDate = Carbon::now()->format('d M Y');
+
+        Mail::to($user->email)->send(new WelcomeMail($user, $registrationDate));
+
+        Auth::attempt($request->only('email', 'password'));
         $request->session()->regenerate();
 
-        // Redirect ke dashboard dengan pesan sukses
         return redirect()->route('dashboard')
-            ->withSuccess('You have successfully registered & logged in!');
+        ->withSuccess('You have successfully registered & logged in!');
     }
 
     /**

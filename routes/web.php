@@ -5,6 +5,7 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\Auth\LoginRegisterController;
+use App\Http\Controllers\SendEmailController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -30,3 +31,8 @@ Route::get('/dashboard', [LoginRegisterController::class, 'dashboard'])->name('d
 Route::resource('users', UserController::class);
 
 Route::resource('gallery', GalleryController::class);
+
+Route::get('/send-mail', [SendEmailController::class,'index'])->name('kirim-email');
+
+Route::post('/post-email', [SendEmailController::class, 'store'])->name('post-email');
+
